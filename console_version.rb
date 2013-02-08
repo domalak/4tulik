@@ -1,19 +1,38 @@
-sheep_count = 20
-next_season = :kystau
+require File.expand_path(File.dirname(__FILE__) + '/animal')
 
-def seasonal_events
+sheep = Animal.new(20, 5, 30..50, 0..-50)
+
+$next_season = :kystau
+months = 6
+
+def apply_percent(number, range)
+  prng = Random.new
+  
+  if range.last > 0 then
+    (number * (100 + prng.rand(range)) / 100).round
+  else
+    (number * (100 - prng.rand(range.first.abs..range.last.abs)) / 100).round
+  end
+end
+
+def seasonal_events(animal)
   prng = Random.new()
   
-  sheep_count = (sheep_count * (prng.rand(21) + 130) / 100).round
-  
-  case prng.rand(3)
-  when 0
-    sheep_count = (sheep_count * (50 + prng.rand(25)) / 100).round
-  when 1
-    sheep_count = (sheep_count * (75 + prng.rand(25)) / 100).round
+  if $next_season == :kystau
+    # new borns
+    animal.count = apply_percent(animal.count, animal.grow_percent)
+    
+    # died from freeze
+    animal.count = apply_percent(animal.count, animal.freeze_percent)
+    
+    $next_season = :jailau 
+  else
+    
+    
+    $next_season = :kystau
   end
   
-  sheep_count
+  animal.count
 end
 
 # title and starting stats
@@ -22,16 +41,14 @@ puts
 puts "Sen kewe kuni boiy olgenwe qymyz iwip, qatty uiyqtap ketipsin. Bugin oianyp qarasan auyl joq, kow ketip, jurtta qaldyn."
 puts "Wynyn aitqanda seni adeii tastap ketti, bundai jalqau, ylgi mas adam ewkimge kerek emes. Awtan olmesin dep, birnewe qoi tastap ketipti biraq."
 puts
-puts "You have #{sheep_count} sheeps" 
-puts "Press Enter to go to #{next_season.to_s}"
+puts "You have #{sheep.count} sheeps" 
 
 loop do
-  seasonal_events
-  
-  puts "You have #{sheep_count} sheeps" 
-  puts "Press Enter to go to #{next_season.to_s}"
-  
+  puts "Press Enter to go to #{$next_season.to_s}"
   str = gets.chop
   break if str == "q"
   
+  sheep.count = seasonal_events(sheep)
+  
+  puts "You have #{sheep.count} sheeps" 
 end
